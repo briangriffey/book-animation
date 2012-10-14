@@ -15,5 +15,11 @@
         android:layout_width="match_parent"
         android:text="Something something something something Something something something something Something something something something Something something something something Something something something something Something something something something Something something something something Something something something something Something something something something"
         />
+    
+     <TextView
+        android:layout_height="match_parent"
+        android:layout_width="match_parent"
+        android:text="Something something something something Something something something something Something something something something Something something something something Something something something something Something something something something Something something something something Something something something something Something something something something"
+        />
 
 </com.briangriffey.notebook.PageTurnLayout>
