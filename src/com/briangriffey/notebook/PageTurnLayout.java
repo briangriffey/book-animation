@@ -10,6 +10,7 @@ import android.graphics.Shader;
 import android.os.Handler;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
+import android.view.View;
 import android.widget.FrameLayout;
 
 public class PageTurnLayout extends FrameLayout {
@@ -21,34 +22,76 @@ public class PageTurnLayout extends FrameLayout {
 	private Paint mPaint;
 	private int mCurrentPage;
 
+	private int mPageTouchSlop;
+	private boolean mIsTurning;
+
+	private PageTurnDirection mDirection;
+	private float mFirstX;
+
 	private Handler mHandler = new Handler();
 
 	public PageTurnLayout(Context context, AttributeSet attrs) {
 		super(context, attrs);
-		setWillNotDraw(false);
-		mPaint = new Paint();
-		mBottomViewRect = new Rect();
-		mTopViewRect = new Rect();
+		init();
 
 	}
 
 	public PageTurnLayout(Context context, AttributeSet attrs, int defStyle) {
 		super(context, attrs, defStyle);
-		setWillNotDraw(false);
-		mPaint = new Paint();
-
-		mBottomViewRect = new Rect();
-		mTopViewRect = new Rect();
+		init();
 	}
 
 	public PageTurnLayout(Context context) {
 		super(context);
+		init();
+
+	}
+
+	private void init() {
 		setWillNotDraw(false);
 		mPaint = new Paint();
 
 		mBottomViewRect = new Rect();
 		mTopViewRect = new Rect();
 
+		mPageTouchSlop = (int) getResources().getDimension(R.dimen.touch_start_padding);
+	}
+
+	protected boolean isTouchAPageTurnStart(MotionEvent ev) {
+		if (ev.getAction() != MotionEvent.ACTION_DOWN)
+			return false;
+
+		return isTouchNearEdge(ev);
+
+	}
+
+	protected boolean isTouchNearEdge(MotionEvent ev) {
+		if (Math.abs(ev.getX() - getMeasuredWidth()) < mPageTouchSlop)
+			return true;
+		else if (ev.getX() < mPageTouchSlop)
+			return true;
+
+		return false;
+	}
+	
+	protected PageTurnDirection getPageTurnDirection(MotionEvent ev) {
+		if(mFirstX - ev.getX() == 0.0f)
+			return null;
+		
+		PageTurnDirection direction = mFirstX - ev.getX() > 0 ? PageTurnDirection.LEFT : PageTurnDirection.RIGHT;
+		return direction;
+	}
+	
+	protected boolean shouldTurn() {
+		if(mDirection == null)
+			return false;
+		
+		if(mDirection == PageTurnDirection.LEFT && mCurrentPage == getChildCount() - 1)
+			return false;
+		else if(mDirection == PageTurnDirection.RIGHT && mCurrentPage == 0)
+			return false;
+		
+		return true;
 	}
 
 	@Override
@@ -59,16 +102,40 @@ public class PageTurnLayout extends FrameLayout {
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
 
-		if (event.getAction() == MotionEvent.ACTION_DOWN) {
-			mLastTouchPoint = new Point((int) event.getX(), (int) event.getY());
-			invalidate();
-		} else if (event.getAction() == MotionEvent.ACTION_MOVE) {
-			mLastTouchPoint = new Point((int) event.getX(), (int) event.getY());
-			invalidate();
-		} else if (event.getAction() == MotionEvent.ACTION_UP) {
+		if (event.getAction() == MotionEvent.ACTION_DOWN && !mIsTurning) {
+
+			mIsTurning = isTouchAPageTurnStart(event);
+
+			if (!mIsTurning) {
+				return false;
+			} else {
+				
+				invalidate();
+				mLastTouchPoint = new Point((int) event.getX(), (int) event.getY());
+				mFirstX = event.getX();
+				return true;
+			}
+
+		} else if (event.getAction() == MotionEvent.ACTION_MOVE && mIsTurning) {
+			if(mDirection == null) {
+				//get the page turn direction
+				mDirection = getPageTurnDirection(event);
+				
+				//if we shouldn't turn then abort everything and reset it
+				if(!shouldTurn()) {
+					mDirection = null;
+					mIsTurning = false;
+					return false;
+				}
+			}
 			
+			mLastTouchPoint = new Point((int) event.getX(), (int) event.getY());
+			invalidate();
+
+		} else if (event.getAction() == MotionEvent.ACTION_UP && mIsTurning) {
+
 			int halfWidth = getMeasuredWidth() / 2;
-			
+
 			if (mLastTouchPoint.x > halfWidth) {
 				final Runnable animationRunnable = new Runnable() {
 					public void run() {
@@ -77,6 +144,13 @@ public class PageTurnLayout extends FrameLayout {
 
 						if (mLastTouchPoint.x < getMeasuredWidth())
 							mHandler.post(this);
+						else {
+							mIsTurning = false;
+
+							if (mDirection == PageTurnDirection.RIGHT)
+								mCurrentPage--;
+							mDirection = null;
+						}
 					}
 				};
 
@@ -91,7 +165,11 @@ public class PageTurnLayout extends FrameLayout {
 						if (mLastTouchPoint.x > -(getMeasuredWidth() / 2)) {
 							mHandler.post(this);
 						} else {
-							mCurrentPage++;
+							mIsTurning = false;
+
+							if (mDirection == PageTurnDirection.LEFT)
+								mCurrentPage++;
+							mDirection = null;
 						}
 					}
 				};
@@ -106,7 +184,19 @@ public class PageTurnLayout extends FrameLayout {
 
 	@Override
 	public void draw(Canvas canvas) {
-		if (mLastTouchPoint != null && getChildCount() > mCurrentPage + 1) {
+
+		if (mLastTouchPoint != null && mIsTurning && mDirection != null) {
+			View topView;
+			View bottomView;
+
+			if (mDirection == PageTurnDirection.LEFT) {
+				topView = getChildAt(mCurrentPage);
+				bottomView = getChildAt(mCurrentPage + 1);
+			} else {
+				topView = getChildAt(mCurrentPage - 1);
+				bottomView = getChildAt(mCurrentPage);
+			}
+
 			int height = getMeasuredHeight();
 			int width = getMeasuredWidth();
 
@@ -116,19 +206,25 @@ public class PageTurnLayout extends FrameLayout {
 			int backOfPageWidth = Math.min(halfWidth, distanceToEnd / 2);
 			int shadowLength = Math.max(5, backOfPageWidth / 20);
 
+			// The rect that represents the backofthepage
 			Rect backOfPageRect = new Rect(mLastTouchPoint.x, 0, mLastTouchPoint.x + backOfPageWidth, height);
+			// The along the crease of the turning page
 			Rect shadowRect = new Rect(mLastTouchPoint.x - shadowLength, 0, mLastTouchPoint.x, height);
+			// The shadow cast onto the next page by teh turning page
 			Rect backShadowRect = new Rect(backOfPageRect.right, 0, backOfPageRect.right + (backOfPageWidth / 2), height);
 
+			// set the top view to be the current page to the crease of the
+			// turning page
 			mTopViewRect.set(0, 0, mLastTouchPoint.x, getMeasuredHeight());
 			mBottomViewRect.set(backOfPageRect.right, 0, width, height);
 
 			canvas.save();
-
+			// clip and draw the top page to your touch
 			canvas.clipRect(mTopViewRect);
-			getChildAt(mCurrentPage).draw(canvas);
+			topView.draw(canvas);
 			canvas.restore();
 
+			// clip and draw the first shadow
 			canvas.save();
 			canvas.clipRect(shadowRect);
 			mPaint.setShader(new LinearGradient(shadowRect.left, shadowRect.top, shadowRect.right, shadowRect.top, 0x00000000, 0x44000000,
@@ -138,6 +234,7 @@ public class PageTurnLayout extends FrameLayout {
 
 			mPaint.setShader(null);
 
+			// clip and draw the gradient that makes the page look bent
 			canvas.save();
 			canvas.clipRect(backOfPageRect);
 			mPaint.setShadowLayer(0, 0, 0, 0x00000000);
@@ -146,11 +243,13 @@ public class PageTurnLayout extends FrameLayout {
 			canvas.drawPaint(mPaint);
 			canvas.restore();
 
+			// draw the second page in the remaining space
 			canvas.save();
 			canvas.clipRect(mBottomViewRect);
-			getChildAt(mCurrentPage + 1).draw(canvas);
+			bottomView.draw(canvas);
 			canvas.restore();
 
+			// now draw a shadow
 			if (backShadowRect.left > 0) {
 				canvas.save();
 				canvas.clipRect(backShadowRect);
