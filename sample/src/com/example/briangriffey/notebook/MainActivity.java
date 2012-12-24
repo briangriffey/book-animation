@@ -1,4 +1,4 @@
-package com.briangriffey.notebook;
+package com.example.briangriffey.notebook;
 
 import android.os.Bundle;
 import android.app.Activity;
@@ -19,5 +19,5 @@ public class MainActivity extends Activity {
         return true;
     }
 
-    
+
 }
