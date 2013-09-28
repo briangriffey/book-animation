@@ -5,9 +5,10 @@ Book-animation is a simple library that allows you to make a book turn interacti
 
 Simply check out the sample project to see how it works!
 
-
-![Alt page turn layout](https://raw.github.com/briangriffey/book-animation/master/preview.png)
+Sample video can be found here
+http://www.youtube.com/watch?v=3YY5XSOojhs&feature=youtu.be
 
 Latest
 ======
 This project is fully mavenized now.  Should make it much easier to import.
+
