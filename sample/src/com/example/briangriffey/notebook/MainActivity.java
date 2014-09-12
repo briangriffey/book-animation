@@ -1,17 +1,18 @@
 package com.example.briangriffey.notebook;
 
+import com.briangriffey.notebook.PageTurnPageTransformer;
 import com.briangriffey.notebook.PageTurnPagerAdapter;
-import com.briangriffey.notebook.PageTurnViewPager;
 
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.view.ViewPager;
 import android.view.Menu;
 
 public class MainActivity extends FragmentActivity {
 	// When requested, this adapter returns a DemoObjectFragment,
 	// representing an object in the collection.
 	PageTurnPagerAdapter mPagerAdapter;
-	PageTurnViewPager mViewPager;
+	ViewPager mViewPager;
 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -20,7 +21,8 @@ public class MainActivity extends FragmentActivity {
 		// ViewPager and its adapters use support library
 		// fragments, so use getSupportFragmentManager.
 		mPagerAdapter = new PageTurnPagerAdapter(getSupportFragmentManager());
-		mViewPager = (PageTurnViewPager) findViewById(R.id.pager);
+		mViewPager = (ViewPager) findViewById(R.id.pager);
+		mViewPager.setPageTransformer(true, new PageTurnPageTransformer());
 		mViewPager.setAdapter(mPagerAdapter);
 	}
 

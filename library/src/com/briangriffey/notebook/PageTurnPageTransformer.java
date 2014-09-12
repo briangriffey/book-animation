@@ -14,7 +14,7 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
-public class PageTurnViewPager extends ViewPager {
+public class PageTurnPageTransformer extends ViewPager {
 
 	private Point mLastTouchPoint;
 	private Rect mTopViewRect;
@@ -31,13 +31,13 @@ public class PageTurnViewPager extends ViewPager {
 
 	private Handler mHandler = new Handler();
 
-	public PageTurnViewPager(Context context, AttributeSet attrs) {
+	public PageTurnPageTransformer(Context context, AttributeSet attrs) {
 		super(context, attrs);
 		init();
 
 	}
 
-	public PageTurnViewPager(Context context) {
+	public PageTurnPageTransformer(Context context) {
 		super(context);
 		init();
 
@@ -96,7 +96,7 @@ public class PageTurnViewPager extends ViewPager {
 
 	@Override
 	protected void onPageScrolled(int arg0, float arg1, int arg2) {
-		Log.d("PageTurn", "onPageScrolled:  " + arg0 + " : " + arg1 + " : " + arg2);
+//		Log.d("PageTurn", "onPageScrolled:  " + arg0 + " : " + arg1 + " : " + arg2);
 		super.onPageScrolled(arg0, arg1, arg2);
 	}
 
