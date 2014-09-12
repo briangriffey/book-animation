@@ -16,7 +16,7 @@ public class PageTurnFragment extends Fragment {
 		// properly.
 		View rootView = inflater.inflate(R.layout.fragment_page_detail, container, false);
 		Bundle args = getArguments();
-		((TextView) rootView.findViewById(R.id.text)).setText(Integer.toString(args.getInt(ARG_OBJECT)));
+		((TextView) rootView.findViewById(R.id.title)).setText(Integer.toString(args.getInt(ARG_OBJECT)));
 		return rootView;
 	}
 }
