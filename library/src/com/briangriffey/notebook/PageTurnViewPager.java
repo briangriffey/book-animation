@@ -12,7 +12,6 @@ import android.support.v4.view.ViewPager;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.FrameLayout;
 
 public class PageTurnViewPager extends ViewPager {
 
@@ -90,13 +89,11 @@ public class PageTurnViewPager extends ViewPager {
 		return true;
 	}
 
-	@Override
-	public boolean onInterceptTouchEvent(MotionEvent ev) {
+	public boolean onInterceptTouchEventDeprecated(MotionEvent ev) {
 		return true;
 	}
 
-	@Override
-	public boolean onTouchEvent(MotionEvent event) {
+	public boolean onTouchEventDeprecated(MotionEvent event) {
 
 		if (event.getAction() == MotionEvent.ACTION_DOWN && !mIsTurning) {
 
@@ -178,8 +175,7 @@ public class PageTurnViewPager extends ViewPager {
 		return true;
 	}
 
-	@Override
-	public void draw(Canvas canvas) {
+	public void drawDeprecated(Canvas canvas) {
 
 		if (mLastTouchPoint != null && mIsTurning && mDirection != null) {
 			View topView;
