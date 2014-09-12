@@ -8,12 +8,13 @@ import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.Shader;
 import android.os.Handler;
+import android.support.v4.view.ViewPager;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.FrameLayout;
 
-public class PageTurnLayout extends FrameLayout {
+public class PageTurnLayout extends ViewPager {
 
 	private Point mLastTouchPoint;
 	private Rect mTopViewRect;
@@ -34,11 +35,6 @@ public class PageTurnLayout extends FrameLayout {
 		super(context, attrs);
 		init();
 
-	}
-
-	public PageTurnLayout(Context context, AttributeSet attrs, int defStyle) {
-		super(context, attrs, defStyle);
-		init();
 	}
 
 	public PageTurnLayout(Context context) {
