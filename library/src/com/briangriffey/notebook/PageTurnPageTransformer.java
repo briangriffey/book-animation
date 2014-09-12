@@ -31,17 +31,6 @@ public class PageTurnPageTransformer implements ViewPager.PageTransformer {
 
 	private Handler mHandler = new Handler();
 
-	public PageTurnPageTransformer(Context context, AttributeSet attrs) {
-		super(context, attrs);
-		init();
-
-	}
-
-	public PageTurnPageTransformer(Context context) {
-		super(context);
-		init();
-
-	}
 
 	private void init() {
 		setWillNotDraw(false);
