@@ -22,7 +22,7 @@ public class PageTurnLayout extends FrameLayout {
 	private Paint mPaint;
 	private int mCurrentPage;
 
-	private int mPageTouchSlop;
+	private int mPageTouchPercentageFromEdge;
 	private boolean mIsTurning;
 
 	private PageTurnDirection mDirection;
@@ -54,7 +54,7 @@ public class PageTurnLayout extends FrameLayout {
 		mBottomViewRect = new Rect();
 		mTopViewRect = new Rect();
 
-		mPageTouchSlop = (int) getResources().getDimension(R.dimen.touch_start_padding);
+		mPageTouchPercentageFromEdge = (int) getResources().getDimension(R.dimen.touch_from_edge_percentage);
 	}
 
 	protected boolean isTouchAPageTurnStart(MotionEvent ev) {
@@ -66,12 +66,17 @@ public class PageTurnLayout extends FrameLayout {
 	}
 
 	protected boolean isTouchNearEdge(MotionEvent ev) {
-		if (Math.abs(ev.getX() - getMeasuredWidth()) < mPageTouchSlop)
-			return true;
-		else if (ev.getX() < mPageTouchSlop)
-			return true;
-
-		return false;
+      if (getMeasuredWidth() == 0)
+        return false;
+  
+      float ratioFromPageEdge = ev.getX() / getMeasuredWidth() * 100;
+     
+      if (100 - ratioFromPageEdge < mPageTouchPercentageFromEdge)
+        return true;
+      else if (ratioFromPageEdge < mPageTouchPercentageFromEdge)
+        return true;
+  
+      return false;
 	}
 	
 	protected PageTurnDirection getPageTurnDirection(MotionEvent ev) {
