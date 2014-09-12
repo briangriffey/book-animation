@@ -5,9 +5,9 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 
-public class PageTurnPagerAdaptor extends FragmentStatePagerAdapter {
+public class PageTurnPagerAdapter extends FragmentStatePagerAdapter {
 	
-	public PageTurnPagerAdaptor(FragmentManager fm) {
+	public PageTurnPagerAdapter(FragmentManager fm) {
 		super(fm);
 	}
 
