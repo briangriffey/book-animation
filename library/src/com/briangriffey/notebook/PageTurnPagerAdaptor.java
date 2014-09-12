@@ -1,26 +1,34 @@
 package com.briangriffey.notebook;
 
+import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 
 public class PageTurnPagerAdaptor extends FragmentStatePagerAdapter {
-
+	
 	public PageTurnPagerAdaptor(FragmentManager fm) {
 		super(fm);
-		// TODO Auto-generated constructor stub
 	}
 
 	@Override
-	public Fragment getItem(int arg0) {
-		// TODO Auto-generated method stub
-		return null;
+	public Fragment getItem(int i) {
+		Fragment fragment = new PageTurnFragment();
+		Bundle args = new Bundle();
+		// Our object is just an integer :-P
+		args.putInt(PageTurnFragment.ARG_OBJECT, i + 1);
+		fragment.setArguments(args);
+		return fragment;
 	}
 
 	@Override
 	public int getCount() {
-		// TODO Auto-generated method stub
-		return 0;
+		return 100;
+	}
+
+	@Override
+	public CharSequence getPageTitle(int position) {
+		return "OBJECT " + (position + 1);
 	}
 
 }
