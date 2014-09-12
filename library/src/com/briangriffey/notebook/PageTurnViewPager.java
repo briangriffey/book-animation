@@ -10,6 +10,7 @@ import android.graphics.Shader;
 import android.os.Handler;
 import android.support.v4.view.ViewPager;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -91,6 +92,12 @@ public class PageTurnViewPager extends ViewPager {
 
 	public boolean onInterceptTouchEventDeprecated(MotionEvent ev) {
 		return true;
+	}
+
+	@Override
+	protected void onPageScrolled(int arg0, float arg1, int arg2) {
+		Log.d("PageTurn", "onPageScrolled:  " + arg0 + " : " + arg1 + " : " + arg2);
+		super.onPageScrolled(arg0, arg1, arg2);
 	}
 
 	public boolean onTouchEventDeprecated(MotionEvent event) {
