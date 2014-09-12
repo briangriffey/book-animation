@@ -69,24 +69,24 @@ public class PageTurnViewPager extends ViewPager {
 
 		return false;
 	}
-	
+
 	protected PageTurnDirection getPageTurnDirection(MotionEvent ev) {
-		if(mFirstX - ev.getX() == 0.0f)
+		if (mFirstX - ev.getX() == 0.0f)
 			return null;
-		
+
 		PageTurnDirection direction = mFirstX - ev.getX() > 0 ? PageTurnDirection.LEFT : PageTurnDirection.RIGHT;
 		return direction;
 	}
-	
+
 	protected boolean shouldTurn() {
-		if(mDirection == null)
+		if (mDirection == null)
 			return false;
-		
-		if(mDirection == PageTurnDirection.LEFT && mCurrentPage == getChildCount() - 1)
+
+		if (mDirection == PageTurnDirection.LEFT && mCurrentPage == getChildCount() - 1)
 			return false;
-		else if(mDirection == PageTurnDirection.RIGHT && mCurrentPage == 0)
+		else if (mDirection == PageTurnDirection.RIGHT && mCurrentPage == 0)
 			return false;
-		
+
 		return true;
 	}
 
@@ -105,7 +105,7 @@ public class PageTurnViewPager extends ViewPager {
 			if (!mIsTurning) {
 				return false;
 			} else {
-				
+
 				invalidate();
 				mLastTouchPoint = new Point((int) event.getX(), (int) event.getY());
 				mFirstX = event.getX();
@@ -113,18 +113,18 @@ public class PageTurnViewPager extends ViewPager {
 			}
 
 		} else if (event.getAction() == MotionEvent.ACTION_MOVE && mIsTurning) {
-			if(mDirection == null) {
-				//get the page turn direction
+			if (mDirection == null) {
+				// get the page turn direction
 				mDirection = getPageTurnDirection(event);
-				
-				//if we shouldn't turn then abort everything and reset it
-				if(!shouldTurn()) {
+
+				// if we shouldn't turn then abort everything and reset it
+				if (!shouldTurn()) {
 					mDirection = null;
 					mIsTurning = false;
 					return false;
 				}
 			}
-			
+
 			mLastTouchPoint = new Point((int) event.getX(), (int) event.getY());
 			invalidate();
 
@@ -234,8 +234,8 @@ public class PageTurnViewPager extends ViewPager {
 			canvas.save();
 			canvas.clipRect(backOfPageRect);
 			mPaint.setShadowLayer(0, 0, 0, 0x00000000);
-			mPaint.setShader(new LinearGradient(backOfPageRect.left, backOfPageRect.top, backOfPageRect.right, backOfPageRect.top, new int[] { 0xFFEEEEEE,
-					0xFFDDDDDD, 0xFFEEEEEE, 0xFFD6D6D6 }, new float[] { .35f, .73f, 9f, 1.0f }, Shader.TileMode.REPEAT));
+			mPaint.setShader(new LinearGradient(backOfPageRect.left, backOfPageRect.top, backOfPageRect.right, backOfPageRect.top, new int[]{0xFFEEEEEE,
+					0xFFDDDDDD, 0xFFEEEEEE, 0xFFD6D6D6}, new float[]{.35f, .73f, 9f, 1.0f}, Shader.TileMode.REPEAT));
 			canvas.drawPaint(mPaint);
 			canvas.restore();
 
