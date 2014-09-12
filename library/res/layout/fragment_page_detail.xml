@@ -1,0 +1,73 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="#ff000000" >
+
+    <ImageView
+        android:id="@+id/image_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:contentDescription="This is the a background image representing this text"
+        android:gravity="center"
+        android:src="@drawable/ic_launcher"
+        android:visibility="gone" />
+
+    <VideoView
+        android:id="@+id/video_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_centerInParent="true"
+        android:background="@drawable/ic_launcher"
+        android:gravity="center" />
+
+    <ScrollView
+        android:id="@+id/video_controls_padding"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignBottom="@+id/image_view"
+        android:layout_alignLeft="@+id/image_view"
+        android:layout_alignRight="@+id/image_view"
+        android:layout_alignTop="@+id/image_view"
+        android:gravity="center" >
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:background="#55000000"
+            android:gravity="center"
+            android:orientation="vertical" >
+
+            <TextView
+                android:id="@+id/text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:scrollHorizontally="false"
+                android:text="Lorem ipsum dolor sit amet, cum ex augue accommodare. Id has nusquam accusamus, et pro ignota audire iudicabit. Libris equidem his ex, eu qui audiam consetetur, eum ut prima doming epicuri. At eum nemore docendi, at probo habemus sed, ex lorem adolescens eos. Nostro verear ad qui, at vix verear labitur.
+
+Inimicus definiebas ad sed. Cu reque deserunt scriptorem cum, utroque temporibus vix id. Vocibus fuisset moderatius ut sit, no impedit mentitum vim, per porro everti scaevola eu. Te vim hinc vidisse tractatos, ad mel timeam graecis pertinacia.
+
+Vim id convenire vulputate, sit cu labitur constituto, cu sit mundi tacimates. Quot harum detraxit no sed. Nam nibh vero ad, gloriatur deseruisse vis ad. Ad prodesset appellantur accommodare usu, pro elitr cetero no, at zril civibus oporteat qui. Vim cu nonumy malorum.
+
+Cum at adhuc augue interesset. Ea cum omittam perpetua, sea cu modo regione similique. In equidem abhorreant his, vivendo epicuri voluptatum ei sea. Stet posse ea eos, vim graeci doming dissentiunt ad. Usu eu epicuri senserit.
+
+Cum cu quot essent, sit id euismod labores repudiandae. Ne duo duis labore recusabo. His at elit error, animal aliquip efficiendi ius ad, ea mea pericula assentior. Duis scriptorem ea cum, pro id latine menandri. Et insolens adipisci qui, usu molestie indoctum theophrastus et. Mazim corrumpit disputando eu has."
+                android:textColor="#FFFFFF"
+                android:textSize="25sp" />
+
+            <EditText
+                android:id="@+id/tags"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:hint="Edit me"
+                android:inputType="textMultiLine"
+                android:scrollHorizontally="false"
+                android:text=""
+                android:textColor="#FFFFFF" />
+        </LinearLayout>
+    </ScrollView>
+
+</RelativeLayout>
