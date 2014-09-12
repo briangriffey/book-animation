@@ -14,7 +14,7 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
-public class PageTurnPageTransformer extends ViewPager {
+public class PageTurnPageTransformer implements ViewPager.PageTransformer {
 
 	private Point mLastTouchPoint;
 	private Rect mTopViewRect;
@@ -182,7 +182,8 @@ public class PageTurnPageTransformer extends ViewPager {
 		return true;
 	}
 
-	public void drawDeprecated(Canvas canvas) {
+	@Override
+	public void transformPage(View page, float position){
 
 		if (mLastTouchPoint != null && mIsTurning && mDirection != null) {
 			View topView;
