@@ -14,7 +14,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.FrameLayout;
 
-public class PageTurnLayout extends ViewPager {
+public class PageTurnViewPager extends ViewPager {
 
 	private Point mLastTouchPoint;
 	private Rect mTopViewRect;
@@ -31,13 +31,13 @@ public class PageTurnLayout extends ViewPager {
 
 	private Handler mHandler = new Handler();
 
-	public PageTurnLayout(Context context, AttributeSet attrs) {
+	public PageTurnViewPager(Context context, AttributeSet attrs) {
 		super(context, attrs);
 		init();
 
 	}
 
-	public PageTurnLayout(Context context) {
+	public PageTurnViewPager(Context context) {
 		super(context);
 		init();
 
