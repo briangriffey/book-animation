@@ -1,6 +1,7 @@
 package com.briangriffey.notebook;
 
 import android.annotation.TargetApi;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.LinearGradient;
 import android.graphics.Paint;
@@ -169,96 +170,99 @@ public class PageTurnPageTransformer implements ViewPager.PageTransformer {
 			return;
 		}
 		mPageWidth = page.getWidth();
-		onTouchXEvent(mPageWidth * position);
-		if (mLastTouchPoint != null && mIsTurning && mDirection != null) {
 
-			if (position < -1) { // [-Infinity,-1)
-				// This page is way off-screen to the left.
-				page.setAlpha(0);
-			} else if (position <= 0) { // [-1,0]
-				mTopView = page;
-			} else if (position <= 1) { // (0,1]
-				mBottomView = page;
-			} else { // (1,+Infinity]
-				// This page is way off-screen to the right.
-				page.setAlpha(0);
-			}
-			if (mTopView == null || mBottomView == null) {
-				return;
-			}
+		if (position < -1) { // [-Infinity,-1)
+			// This page is way off-screen to the left.
+			page.setAlpha(0);
+		} else if (position <= 0) { // [-1,0]
+			onTouchXEvent(mPageWidth - Math.abs(mPageWidth * position));
+			mTopView = page;
+		} else if (position <= 1) { // (0,1]
+			mBottomView = page;
+		} else { // (1,+Infinity]
+			// This page is way off-screen to the right.
+			page.setAlpha(0);
+		}
+		if (mTopView == null || mBottomView == null || mLastTouchPoint == null) {
+			Log.d("PageTurn", "Missing top or bottom view, not manimulating the drawing. " + mLastTouchPoint.toString() + " " + mFirstX + " " + position);
+			return;
+		}
 
-			int height = page.getMeasuredHeight();
-			int width = page.getMeasuredWidth();
+		int height = page.getMeasuredHeight();
+		int width = page.getMeasuredWidth();
+		if (height == 0 || width == 0) {
+			Log.d("PageTurn", "height or width of the page is 0, not manimulating the drawing. " + mLastTouchPoint.toString() + " " + mFirstX + " " + position);
+			return;
+		}
 
-			int halfWidth = (int) (width * .5);
+		int halfWidth = (int) (width * .5);
 
-			int distanceToEnd = width - mLastTouchPoint.x;
-			int backOfPageWidth = Math.min(halfWidth, distanceToEnd / 2);
-			int shadowLength = Math.max(5, backOfPageWidth / 20);
+		int distanceToEnd = width - mLastTouchPoint.x;
+		int backOfPageWidth = Math.min(halfWidth, distanceToEnd / 2);
+		int shadowLength = Math.max(5, backOfPageWidth / 20);
 
-			// The rect that represents the backofthepage
-			Rect backOfPageRect = new Rect(mLastTouchPoint.x, 0, mLastTouchPoint.x + backOfPageWidth, height);
-			// The along the crease of the turning page
-			Rect shadowRect = new Rect(mLastTouchPoint.x - shadowLength, 0, mLastTouchPoint.x, height);
-			// The shadow cast onto the next page by teh turning page
-			Rect backShadowRect = new Rect(backOfPageRect.right, 0, backOfPageRect.right + (backOfPageWidth / 2), height);
+		// The rect that represents the backofthepage
+		Rect backOfPageRect = new Rect(mLastTouchPoint.x, 0, mLastTouchPoint.x + backOfPageWidth, height);
+		// The along the crease of the turning page
+		Rect shadowRect = new Rect(mLastTouchPoint.x - shadowLength, 0, mLastTouchPoint.x, height);
+		// The shadow cast onto the next page by teh turning page
+		Rect backShadowRect = new Rect(backOfPageRect.right, 0, backOfPageRect.right + (backOfPageWidth / 2), height);
 
-			// set the top view to be the current page to the crease of the
-			// turning page
-			mTopViewRect.set(0, 0, mLastTouchPoint.x, page.getMeasuredHeight());
-			mBottomViewRect.set(backOfPageRect.right, 0, width, height);
+		// set the top view to be the current page to the crease of the
+		// turning page
+		mTopViewRect.set(0, 0, mLastTouchPoint.x, page.getMeasuredHeight());
+		mBottomViewRect.set(backOfPageRect.right, 0, width, height);
 
-			if (page.getDrawingCache() == null) {
-				Log.d("PageTurn", "This page had no canvas, not drawing.");
-				return;
-			}
-			page.setTranslationX(page.getWidth() * -position);
+		Canvas canvas;
+		if (page.getDrawingCache() != null) {
+			canvas = new Canvas(page.getDrawingCache());
+		} else {
+			Log.d("PageTurn", "This page had no canvas, using a small blank canvas. " + mLastTouchPoint.toString() + " " + mFirstX + " " + position);
+			Bitmap b = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
+//			Bitmap b = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+			canvas = new Canvas(b);
+		}
+		page.setTranslationX(page.getWidth() * -position);
 
-			Canvas canvas = new Canvas(page.getDrawingCache());
+		canvas.save();
+		// clip and draw the top page to your touch
+		canvas.clipRect(mTopViewRect);
+		mTopView.draw(canvas);
+		canvas.restore();
+
+		// clip and draw the first shadow
+		canvas.save();
+		canvas.clipRect(shadowRect);
+		mPaint.setShader(new LinearGradient(shadowRect.left, shadowRect.top, shadowRect.right, shadowRect.top, 0x00000000, 0x44000000, Shader.TileMode.REPEAT));
+		canvas.drawPaint(mPaint);
+		canvas.restore();
+
+		mPaint.setShader(null);
+
+		// clip and draw the gradient that makes the page look bent
+		canvas.save();
+		canvas.clipRect(backOfPageRect);
+		mPaint.setShadowLayer(0, 0, 0, 0x00000000);
+		mPaint.setShader(new LinearGradient(backOfPageRect.left, backOfPageRect.top, backOfPageRect.right, backOfPageRect.top, new int[]{0xFFEEEEEE,
+				0xFFDDDDDD, 0xFFEEEEEE, 0xFFD6D6D6}, new float[]{.35f, .73f, 9f, 1.0f}, Shader.TileMode.REPEAT));
+		canvas.drawPaint(mPaint);
+		canvas.restore();
+
+		// draw the second page in the remaining space
+		canvas.save();
+		canvas.clipRect(mBottomViewRect);
+		mBottomView.draw(canvas);
+		canvas.restore();
+
+		// now draw a shadow
+		if (backShadowRect.left > 0) {
 			canvas.save();
-			// clip and draw the top page to your touch
-			canvas.clipRect(mTopViewRect);
-			mTopView.draw(canvas);
-			canvas.restore();
-
-			// clip and draw the first shadow
-			canvas.save();
-			canvas.clipRect(shadowRect);
-			mPaint.setShader(new LinearGradient(shadowRect.left, shadowRect.top, shadowRect.right, shadowRect.top, 0x00000000, 0x44000000,
+			canvas.clipRect(backShadowRect);
+			mPaint.setShader(new LinearGradient(backShadowRect.left, backShadowRect.top, backShadowRect.right, backShadowRect.top, 0x44000000, 0x00000000,
 					Shader.TileMode.REPEAT));
 			canvas.drawPaint(mPaint);
+			// canvas.drawColor(0xFF000000);
 			canvas.restore();
-
-			mPaint.setShader(null);
-
-			// clip and draw the gradient that makes the page look bent
-			canvas.save();
-			canvas.clipRect(backOfPageRect);
-			mPaint.setShadowLayer(0, 0, 0, 0x00000000);
-			mPaint.setShader(new LinearGradient(backOfPageRect.left, backOfPageRect.top, backOfPageRect.right, backOfPageRect.top, new int[]{0xFFEEEEEE,
-					0xFFDDDDDD, 0xFFEEEEEE, 0xFFD6D6D6}, new float[]{.35f, .73f, 9f, 1.0f}, Shader.TileMode.REPEAT));
-			canvas.drawPaint(mPaint);
-			canvas.restore();
-
-			// draw the second page in the remaining space
-			canvas.save();
-			canvas.clipRect(mBottomViewRect);
-			mBottomView.draw(canvas);
-			canvas.restore();
-
-			// now draw a shadow
-			if (backShadowRect.left > 0) {
-				canvas.save();
-				canvas.clipRect(backShadowRect);
-				mPaint.setShader(new LinearGradient(backShadowRect.left, backShadowRect.top, backShadowRect.right, backShadowRect.top, 0x44000000, 0x00000000,
-						Shader.TileMode.REPEAT));
-				canvas.drawPaint(mPaint);
-				// canvas.drawColor(0xFF000000);
-				canvas.restore();
-			}
-		} else {
-			Log.d("PageTurn", "Not turning the page, this should not happen." + mLastTouchPoint.toString() + " " + mIsTurning + " " + mDirection);
-			// page.draw(canvas);
 		}
 	}
 
