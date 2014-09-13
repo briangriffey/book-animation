@@ -1,15 +1,15 @@
 package com.briangriffey.notebook;
 
-import android.content.Context;
+import android.annotation.TargetApi;
 import android.graphics.Canvas;
 import android.graphics.LinearGradient;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.Shader;
+import android.os.Build;
 import android.os.Handler;
 import android.support.v4.view.ViewPager;
-import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
@@ -25,45 +25,47 @@ public class PageTurnPageTransformer implements ViewPager.PageTransformer {
 
 	private int mPageTouchSlop;
 	private boolean mIsTurning;
-
+	private float mPageWidth;
 	private PageTurnDirection mDirection;
 	private float mFirstX;
 
 	private Handler mHandler = new Handler();
+	View mTopView;
+	View mBottomView;
 
+	public PageTurnPageTransformer() {
+		super();
+		init();
+	}
 
 	private void init() {
-		setWillNotDraw(false);
 		mPaint = new Paint();
 
 		mBottomViewRect = new Rect();
 		mTopViewRect = new Rect();
 
-		mPageTouchSlop = (int) getResources().getDimension(R.dimen.touch_start_padding);
+		mPageTouchSlop = 10;// (int)
+							// getResources().getDimension(R.dimen.touch_start_padding);
 	}
 
-	protected boolean isTouchAPageTurnStart(MotionEvent ev) {
-		if (ev.getAction() != MotionEvent.ACTION_DOWN)
-			return false;
-
-		return isTouchNearEdge(ev);
-
+	protected boolean isTouchAPageTurnStart(float touchXPosition) {
+		return isTouchNearEdge(touchXPosition);
 	}
 
-	protected boolean isTouchNearEdge(MotionEvent ev) {
-		if (Math.abs(ev.getX() - getMeasuredWidth()) < mPageTouchSlop)
+	protected boolean isTouchNearEdge(float touchXPosition) {
+		if (Math.abs(touchXPosition - mPageWidth) < mPageTouchSlop)
 			return true;
-		else if (ev.getX() < mPageTouchSlop)
+		else if (touchXPosition < mPageTouchSlop)
 			return true;
 
 		return false;
 	}
 
-	protected PageTurnDirection getPageTurnDirection(MotionEvent ev) {
-		if (mFirstX - ev.getX() == 0.0f)
+	protected PageTurnDirection getPageTurnDirection(float touchXPosition) {
+		if (mFirstX - touchXPosition == 0.0f)
 			return null;
 
-		PageTurnDirection direction = mFirstX - ev.getX() > 0 ? PageTurnDirection.LEFT : PageTurnDirection.RIGHT;
+		PageTurnDirection direction = mFirstX - touchXPosition > 0 ? PageTurnDirection.LEFT : PageTurnDirection.RIGHT;
 		return direction;
 	}
 
@@ -71,44 +73,38 @@ public class PageTurnPageTransformer implements ViewPager.PageTransformer {
 		if (mDirection == null)
 			return false;
 
-		if (mDirection == PageTurnDirection.LEFT && mCurrentPage == getChildCount() - 1)
-			return false;
-		else if (mDirection == PageTurnDirection.RIGHT && mCurrentPage == 0)
-			return false;
-
 		return true;
 	}
 
 	public boolean onInterceptTouchEventDeprecated(MotionEvent ev) {
+		Log.d("PageTurn", "onInterceptTouchEventDeprecated");
 		return true;
 	}
 
-	@Override
-	protected void onPageScrolled(int arg0, float arg1, int arg2) {
-//		Log.d("PageTurn", "onPageScrolled:  " + arg0 + " : " + arg1 + " : " + arg2);
-		super.onPageScrolled(arg0, arg1, arg2);
-	}
+	public boolean onTouchXEvent(float touchXPosition) {
 
-	public boolean onTouchEventDeprecated(MotionEvent event) {
+		if (!mIsTurning) {
 
-		if (event.getAction() == MotionEvent.ACTION_DOWN && !mIsTurning) {
-
-			mIsTurning = isTouchAPageTurnStart(event);
+			mIsTurning = isTouchAPageTurnStart(touchXPosition);
 
 			if (!mIsTurning) {
 				return false;
 			} else {
 
-				invalidate();
-				mLastTouchPoint = new Point((int) event.getX(), (int) event.getY());
-				mFirstX = event.getX();
+				mLastTouchPoint = new Point((int) touchXPosition, 0);
+				mFirstX = touchXPosition;
 				return true;
 			}
 
-		} else if (event.getAction() == MotionEvent.ACTION_MOVE && mIsTurning) {
+		} else if (mIsTurning) {
+
+		}
+
+		if (mIsTurning) {
+
 			if (mDirection == null) {
 				// get the page turn direction
-				mDirection = getPageTurnDirection(event);
+				mDirection = getPageTurnDirection(touchXPosition);
 
 				// if we shouldn't turn then abort everything and reset it
 				if (!shouldTurn()) {
@@ -117,21 +113,17 @@ public class PageTurnPageTransformer implements ViewPager.PageTransformer {
 					return false;
 				}
 			}
+			mLastTouchPoint = new Point((int) touchXPosition, 0);
 
-			mLastTouchPoint = new Point((int) event.getX(), (int) event.getY());
-			invalidate();
-
-		} else if (event.getAction() == MotionEvent.ACTION_UP && mIsTurning) {
-
-			int halfWidth = getMeasuredWidth() / 2;
+			final double halfWidth = 0.5;
+			final double fullWidth = 1;
 
 			if (mLastTouchPoint.x > halfWidth) {
 				final Runnable animationRunnable = new Runnable() {
 					public void run() {
 						mLastTouchPoint.x += 20;
-						invalidate();
 
-						if (mLastTouchPoint.x < getMeasuredWidth())
+						if (mLastTouchPoint.x < fullWidth)
 							mHandler.post(this);
 						else {
 							mIsTurning = false;
@@ -149,9 +141,8 @@ public class PageTurnPageTransformer implements ViewPager.PageTransformer {
 				final Runnable animationRunnable = new Runnable() {
 					public void run() {
 						mLastTouchPoint.x -= 20;
-						invalidate();
 
-						if (mLastTouchPoint.x > -(getMeasuredWidth() / 2)) {
+						if (mLastTouchPoint.x > -halfWidth) {
 							mHandler.post(this);
 						} else {
 							mIsTurning = false;
@@ -171,23 +162,33 @@ public class PageTurnPageTransformer implements ViewPager.PageTransformer {
 		return true;
 	}
 
+	@TargetApi(Build.VERSION_CODES.HONEYCOMB)
 	@Override
-	public void transformPage(View page, float position){
-
+	public void transformPage(View page, float position) {
+		if (page == null) {
+			return;
+		}
+		mPageWidth = page.getWidth();
+		onTouchXEvent(mPageWidth * position);
 		if (mLastTouchPoint != null && mIsTurning && mDirection != null) {
-			View topView;
-			View bottomView;
 
-			if (mDirection == PageTurnDirection.LEFT) {
-				topView = getChildAt(mCurrentPage);
-				bottomView = getChildAt(mCurrentPage + 1);
-			} else {
-				topView = getChildAt(mCurrentPage - 1);
-				bottomView = getChildAt(mCurrentPage);
+			if (position < -1) { // [-Infinity,-1)
+				// This page is way off-screen to the left.
+				page.setAlpha(0);
+			} else if (position <= 0) { // [-1,0]
+				mTopView = page;
+			} else if (position <= 1) { // (0,1]
+				mBottomView = page;
+			} else { // (1,+Infinity]
+				// This page is way off-screen to the right.
+				page.setAlpha(0);
+			}
+			if (mTopView == null || mBottomView == null) {
+				return;
 			}
 
-			int height = getMeasuredHeight();
-			int width = getMeasuredWidth();
+			int height = page.getMeasuredHeight();
+			int width = page.getMeasuredWidth();
 
 			int halfWidth = (int) (width * .5);
 
@@ -204,13 +205,20 @@ public class PageTurnPageTransformer implements ViewPager.PageTransformer {
 
 			// set the top view to be the current page to the crease of the
 			// turning page
-			mTopViewRect.set(0, 0, mLastTouchPoint.x, getMeasuredHeight());
+			mTopViewRect.set(0, 0, mLastTouchPoint.x, page.getMeasuredHeight());
 			mBottomViewRect.set(backOfPageRect.right, 0, width, height);
 
+			if (page.getDrawingCache() == null) {
+				Log.d("PageTurn", "This page had no canvas, not drawing.");
+				return;
+			}
+			page.setTranslationX(page.getWidth() * -position);
+
+			Canvas canvas = new Canvas(page.getDrawingCache());
 			canvas.save();
 			// clip and draw the top page to your touch
 			canvas.clipRect(mTopViewRect);
-			topView.draw(canvas);
+			mTopView.draw(canvas);
 			canvas.restore();
 
 			// clip and draw the first shadow
@@ -235,7 +243,7 @@ public class PageTurnPageTransformer implements ViewPager.PageTransformer {
 			// draw the second page in the remaining space
 			canvas.save();
 			canvas.clipRect(mBottomViewRect);
-			bottomView.draw(canvas);
+			mBottomView.draw(canvas);
 			canvas.restore();
 
 			// now draw a shadow
@@ -249,7 +257,8 @@ public class PageTurnPageTransformer implements ViewPager.PageTransformer {
 				canvas.restore();
 			}
 		} else {
-			getChildAt(mCurrentPage).draw(canvas);
+			Log.d("PageTurn", "Not turning the page, this should not happen." + mLastTouchPoint.toString() + " " + mIsTurning + " " + mDirection);
+			// page.draw(canvas);
 		}
 	}
 
