@@ -191,7 +191,7 @@ public class PageTurnPageTransformer implements ViewPager.PageTransformer {
 		int height = page.getMeasuredHeight();
 		int width = page.getMeasuredWidth();
 		if (height == 0 || width == 0) {
-			Log.d("PageTurn", "height or width of the page is 0, not manimulating the drawing. " + mLastTouchPoint.toString() + " " + mFirstX + " " + position);
+			Log.d("PageTurn", "height or width of this view is 0, not manimulating the drawing. " + mLastTouchPoint.toString() + " " + mFirstX + " " + position);
 			return;
 		}
 
